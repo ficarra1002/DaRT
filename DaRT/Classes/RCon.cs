@@ -646,210 +646,222 @@ namespace DaRT
                         {
                             if (Settings.Default.showGlobalChat)
                                 _form.Log(message, LogType.GlobalChat, this.IsCall(message));
-                        }
-                        // Side chat
-                        else if (message.StartsWith("(Side)"))
-                        {
-                            if (Settings.Default.showSideChat)
-                                _form.Log(message, LogType.SideChat, this.IsCall(message));
-                        }
-                        // Direct chat
-                        else if (message.StartsWith("(Direct)"))
-                        {
-                            if (Settings.Default.showDirectChat)
-                                _form.Log(message, LogType.DirectChat, this.IsCall(message));
-                        }
-                        // Vehicle chat
-                        else if (message.StartsWith("(Vehicle)"))
-                        {
-                            if (Settings.Default.showVehicleChat)
-                                _form.Log(message, LogType.VehicleChat, this.IsCall(message));
-                        }
-                        // Command chat
-                        else if (message.StartsWith("(Command)"))
-                        {
-                            if (Settings.Default.showCommandChat)
-                                _form.Log(message, LogType.CommandChat, this.IsCall(message));
-                        }
-                        // Group chat
-                        else if (message.StartsWith("(Group)"))
-                        {
-                            if (Settings.Default.showGroupChat)
-                                _form.Log(message, LogType.GroupChat, this.IsCall(message));
-                        }
-                        // Unknown chat
-                        else if (message.StartsWith("(Unknown)"))
-                        {
-                            if (Settings.Default.showUnknownChat)
-                                _form.Log(message, LogType.UnknownChat, this.IsCall(message));
-                        }
-                        else if (message.StartsWith("Player #"))
-                        {
-                            if (_pending != "" && message.EndsWith(" " + _pending + " disconnected"))
-                                _pendingLeft = true;
 
-                            if (Settings.Default.refreshOnJoin && message.EndsWith("disconnected") && !_form.pendingPlayers)
-                            {
-                                Thread thread = new Thread(new ThreadStart(_form.thread_Player));
-                                thread.IsBackground = true;
-                                thread.Start();
-                            }
+                        }
 
-                            // Connect/disconnect/kick/ban messages
-                            if (Settings.Default.showPlayerConnectMessages)
-                                _form.Log(message, LogType.Console, false);
-                        }
-                        else if (message.StartsWith("Verified GUID ("))
+                        // DayZ Global Chat forwarder
+                        if (message.StartsWith("(Global)") && (message.Contains("/side") || message.Contains("/global")))
                         {
-                            // GUID verification messages
-                            if (Settings.Default.showVerificationMessages)
-                                _form.Log(message, LogType.Console, false);
+                            var trimmed = message.Replace("(Global)", "");
+                            var trimside = trimmed.Replace("/side", "");
+                            var trimglobal = trimside.Replace("/global", "");
+                            _client.SendCommand(BattlEyeCommand.Say, "-1 " + trimglobal);
+                        }
+                    
 
-                            if (Settings.Default.refreshOnJoin && !_form.pendingPlayers)
-                            {
-                                Thread thread = new Thread(new ThreadStart(_form.thread_Player));
-                                thread.IsBackground = true;
-                                thread.Start();
-                            }
-                        }
-                        else if (message.StartsWith("RCon admin #"))
+                    // Side chat
+                    else if (message.StartsWith("(Side)"))
+                    {
+                        if (Settings.Default.showSideChat)
+                            _form.Log(message, LogType.SideChat, this.IsCall(message));
+                    }
+                    // Direct chat
+                    else if (message.StartsWith("(Direct)"))
+                    {
+                        if (Settings.Default.showDirectChat)
+                            _form.Log(message, LogType.DirectChat, this.IsCall(message));
+                    }
+                    // Vehicle chat
+                    else if (message.StartsWith("(Vehicle)"))
+                    {
+                        if (Settings.Default.showVehicleChat)
+                            _form.Log(message, LogType.VehicleChat, this.IsCall(message));
+                    }
+                    // Command chat
+                    else if (message.StartsWith("(Command)"))
+                    {
+                        if (Settings.Default.showCommandChat)
+                            _form.Log(message, LogType.CommandChat, this.IsCall(message));
+                    }
+                    // Group chat
+                    else if (message.StartsWith("(Group)"))
+                    {
+                        if (Settings.Default.showGroupChat)
+                            _form.Log(message, LogType.GroupChat, this.IsCall(message));
+                    }
+                    // Unknown chat
+                    else if (message.StartsWith("(Unknown)"))
+                    {
+                        if (Settings.Default.showUnknownChat)
+                            _form.Log(message, LogType.UnknownChat, this.IsCall(message));
+                    }
+                    else if (message.StartsWith("Player #"))
+                    {
+                        if (_pending != "" && message.EndsWith(" " + _pending + " disconnected"))
+                            _pendingLeft = true;
+
+                        if (Settings.Default.refreshOnJoin && message.EndsWith("disconnected") && !_form.pendingPlayers)
                         {
-                            // Admin login
-                            if (Settings.Default.showAdminMessages && message.EndsWith("logged in"))
-                                _form.Log(message, LogType.Console, false);
-                            else if (Settings.Default.showAdminChat)
-                                _form.Log(message, LogType.AdminChat, false);
+                            Thread thread = new Thread(new ThreadStart(_form.thread_Player));
+                            thread.IsBackground = true;
+                            thread.Start();
                         }
-                        else if (message.StartsWith("Failed to open") || message.StartsWith("Incompatible filter file"))
+
+                        // Connect/disconnect/kick/ban messages
+                        if (Settings.Default.showPlayerConnectMessages)
+                            _form.Log(message, LogType.Console, false);
+                    }
+                    else if (message.StartsWith("Verified GUID ("))
+                    {
+                        // GUID verification messages
+                        if (Settings.Default.showVerificationMessages)
+                            _form.Log(message, LogType.Console, false);
+
+                        if (Settings.Default.refreshOnJoin && !_form.pendingPlayers)
                         {
-                            // Log errors
-                            if (Settings.Default.showLogErrors)
-                                _form.Log(message, LogType.Console, false);
+                            Thread thread = new Thread(new ThreadStart(_form.thread_Player));
+                            thread.IsBackground = true;
+                            thread.Start();
                         }
-                        // Scripts log
-                        else if (message.StartsWith("Scripts Log:"))
-                        {
-                            if (Settings.Default.showScriptsLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.ScriptsLog, false);
-                        }
-                        // CreateVehicle log
-                        else if (message.StartsWith("CreateVehicle Log:"))
-                        {
-                            if (Settings.Default.showCreateVehicleLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.CreateVehicleLog, false);
-                        }
-                        // DeleteVehicle log
-                        else if (message.StartsWith("DeleteVehicle Log:"))
-                        {
-                            if (Settings.Default.showDeleteVehicleLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.DeleteVehicleLog, false);
-                        }
-                        // PublicVariable log
-                        else if (message.StartsWith("PublicVariable Log:"))
-                        {
-                            if (Settings.Default.showPublicVariableLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.PublicVariableLog, false);
-                        }
-                        // PublicVariableVal log
-                        else if (message.StartsWith("PublicVariable Value Log:"))
-                        {
-                            if (Settings.Default.showPublicVariableValLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.PublicVariableValLog, false);
-                        }
-                        // RemoteExec log
-                        else if (message.StartsWith("RemoteExec Log:"))
-                        {
-                            if (Settings.Default.showRemoteExecLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.RemoteExecLog, false);
-                        }
-                        // RemoteControl log
-                        else if (message.StartsWith("RemoteControl Log:"))
-                        {
-                            if (Settings.Default.showRemoteControlLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.RemoteControlLog, false);
-                        }
-                        // SetDamage log
-                        else if (message.StartsWith("SetDamage Log:"))
-                        {
-                            if (Settings.Default.showSetDamageLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.SetDamageLog, false);
-                        }
-                        // SetVariable log
-                        else if (message.StartsWith("SetVariable Log:"))
-                        {
-                            if (Settings.Default.showSetVariableLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.SetVariableLog, false);
-                        }
-                        // SetVariableVal log
-                        else if (message.StartsWith("SetVariable Value Log:"))
-                        {
-                            if (Settings.Default.showSetVariableValLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.SetVariableValLog, false);
-                        }
-                        // SetPos log
-                        else if (message.StartsWith("SetPos Log:"))
-                        {
-                            if (Settings.Default.showSetPosLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.SetPosLog, false);
-                        }
-                        // AddMagazineCargo log
-                        else if (message.StartsWith("AddMagazineCargo Log:"))
-                        {
-                            if (Settings.Default.showAddMagazineCargoLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.AddMagazineCargoLog, false);
-                        }
-                        // AddWeaponCargo log
-                        else if (message.StartsWith("AddWeaponCargo Log:"))
-                        {
-                            if (Settings.Default.showAddWeaponCargoLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.AddWeaponCargoLog, false);
-                        }
-                        // AddBackpackCargo log
-                        else if (message.StartsWith("AddBackpackCargo Log:"))
-                        {
-                            if (Settings.Default.showAddBackpackCargoLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.AddBackpackCargoLog, false);
-                        }
-                        // AttachTo log
-                        else if (message.StartsWith("AttachTo Log:"))
-                        {
-                            if (Settings.Default.showAttachToLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.AttachToLog, false);
-                        }
-                        // MPEventHandler log
-                        else if (message.StartsWith("MPEventHandler Log:"))
-                        {
-                            if (Settings.Default.showMPEventHandlerLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.MPEventHandlerLog, false);
-                        }
-                        // TeamSwitch log
-                        else if (message.StartsWith("TeamSwitch Log:"))
-                        {
-                            if (Settings.Default.showTeamSwitchLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.TeamSwitchLog, false);
-                        }
-                        // SelectPlayer log
-                        else if (message.StartsWith("SelectPlayer Log:"))
-                        {
-                            if (Settings.Default.showSelectPlayerLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.SelectPlayerLog, false);
-                        }
-                        // WaypointCondition log
-                        else if (message.StartsWith("WaypointCondition Log:"))
-                        {
-                            if (Settings.Default.showWaypointConditionLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.WaypointConditionLog, false);
-                        }
-                        // WaypointStatement log
-                        else if (message.StartsWith("WaypointStatement Log:"))
-                        {
-                            if (Settings.Default.showWaypointStatementLog && !this.ShallFilter(message))
-                                _form.Log(message, LogType.WaypointStatementLog, false);
-                        }
-                        else
-                        {
-                            if (_form != null) _form.Log("UNKNOWN: " + message, LogType.Debug, false);
-                        }
+                    }
+                    else if (message.StartsWith("RCon admin #"))
+                    {
+                        // Admin login
+                        if (Settings.Default.showAdminMessages && message.EndsWith("logged in"))
+                            _form.Log(message, LogType.Console, false);
+                        else if (Settings.Default.showAdminChat)
+                            _form.Log(message, LogType.AdminChat, false);
+                    }
+                    else if (message.StartsWith("Failed to open") || message.StartsWith("Incompatible filter file"))
+                    {
+                        // Log errors
+                        if (Settings.Default.showLogErrors)
+                            _form.Log(message, LogType.Console, false);
+                    }
+                    // Scripts log
+                    else if (message.StartsWith("Scripts Log:"))
+                    {
+                        if (Settings.Default.showScriptsLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.ScriptsLog, false);
+                    }
+                    // CreateVehicle log
+                    else if (message.StartsWith("CreateVehicle Log:"))
+                    {
+                        if (Settings.Default.showCreateVehicleLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.CreateVehicleLog, false);
+                    }
+                    // DeleteVehicle log
+                    else if (message.StartsWith("DeleteVehicle Log:"))
+                    {
+                        if (Settings.Default.showDeleteVehicleLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.DeleteVehicleLog, false);
+                    }
+                    // PublicVariable log
+                    else if (message.StartsWith("PublicVariable Log:"))
+                    {
+                        if (Settings.Default.showPublicVariableLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.PublicVariableLog, false);
+                    }
+                    // PublicVariableVal log
+                    else if (message.StartsWith("PublicVariable Value Log:"))
+                    {
+                        if (Settings.Default.showPublicVariableValLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.PublicVariableValLog, false);
+                    }
+                    // RemoteExec log
+                    else if (message.StartsWith("RemoteExec Log:"))
+                    {
+                        if (Settings.Default.showRemoteExecLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.RemoteExecLog, false);
+                    }
+                    // RemoteControl log
+                    else if (message.StartsWith("RemoteControl Log:"))
+                    {
+                        if (Settings.Default.showRemoteControlLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.RemoteControlLog, false);
+                    }
+                    // SetDamage log
+                    else if (message.StartsWith("SetDamage Log:"))
+                    {
+                        if (Settings.Default.showSetDamageLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.SetDamageLog, false);
+                    }
+                    // SetVariable log
+                    else if (message.StartsWith("SetVariable Log:"))
+                    {
+                        if (Settings.Default.showSetVariableLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.SetVariableLog, false);
+                    }
+                    // SetVariableVal log
+                    else if (message.StartsWith("SetVariable Value Log:"))
+                    {
+                        if (Settings.Default.showSetVariableValLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.SetVariableValLog, false);
+                    }
+                    // SetPos log
+                    else if (message.StartsWith("SetPos Log:"))
+                    {
+                        if (Settings.Default.showSetPosLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.SetPosLog, false);
+                    }
+                    // AddMagazineCargo log
+                    else if (message.StartsWith("AddMagazineCargo Log:"))
+                    {
+                        if (Settings.Default.showAddMagazineCargoLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.AddMagazineCargoLog, false);
+                    }
+                    // AddWeaponCargo log
+                    else if (message.StartsWith("AddWeaponCargo Log:"))
+                    {
+                        if (Settings.Default.showAddWeaponCargoLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.AddWeaponCargoLog, false);
+                    }
+                    // AddBackpackCargo log
+                    else if (message.StartsWith("AddBackpackCargo Log:"))
+                    {
+                        if (Settings.Default.showAddBackpackCargoLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.AddBackpackCargoLog, false);
+                    }
+                    // AttachTo log
+                    else if (message.StartsWith("AttachTo Log:"))
+                    {
+                        if (Settings.Default.showAttachToLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.AttachToLog, false);
+                    }
+                    // MPEventHandler log
+                    else if (message.StartsWith("MPEventHandler Log:"))
+                    {
+                        if (Settings.Default.showMPEventHandlerLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.MPEventHandlerLog, false);
+                    }
+                    // TeamSwitch log
+                    else if (message.StartsWith("TeamSwitch Log:"))
+                    {
+                        if (Settings.Default.showTeamSwitchLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.TeamSwitchLog, false);
+                    }
+                    // SelectPlayer log
+                    else if (message.StartsWith("SelectPlayer Log:"))
+                    {
+                        if (Settings.Default.showSelectPlayerLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.SelectPlayerLog, false);
+                    }
+                    // WaypointCondition log
+                    else if (message.StartsWith("WaypointCondition Log:"))
+                    {
+                        if (Settings.Default.showWaypointConditionLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.WaypointConditionLog, false);
+                    }
+                    // WaypointStatement log
+                    else if (message.StartsWith("WaypointStatement Log:"))
+                    {
+                        if (Settings.Default.showWaypointStatementLog && !this.ShallFilter(message))
+                            _form.Log(message, LogType.WaypointStatementLog, false);
+                    }
+                    else
+                    {
+                        if (_form != null) _form.Log("UNKNOWN: " + message, LogType.Debug, false);
+                    }
                     }
                 }
             }
